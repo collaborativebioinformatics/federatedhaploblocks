@@ -1,0 +1,32 @@
+9 consensus sequences:
+    SMALL   size=5
+    SINGLE  size=1
+    BIG     size=2428
+    SINGLE  size=1
+    SMALL   size=5
+    BIG     size=1678
+    SMALL   size=15
+    BIG     size=1537
+    SINGLE  size=1
+
+2433 members mapped from TSV
+2433 queries, 0 with no consensus
+    BIG     2428 available
+    SMALL   5 available
+
+wrote 45 queries
+
+FORWARD
+  $ makeblastdb -in consensus_samples.fasta -dbtype nucl -out blast_work/cdb
+  $ blastn -query blast_work/queries_subset.fasta -db blast_work/cdb -out blast_work/forward.tsv -outfmt 6 qseqid sseqid pident length bitscore -evalue 1e-20 -dust no -max_target_seqs 20 -num_threads 4
+
+REVERSE
+  $ makeblastdb -in blast_work/queries_subset.fasta -dbtype nucl -out blast_work/qdb
+  $ blastn -query consensus_samples.fasta -db blast_work/qdb -out blast_work/reverse.tsv -outfmt 6 qseqid sseqid pident length bitscore -evalue 1e-20 -dust no -max_target_seqs 20 -num_threads 4
+
+==========================================================================
+class      n   correct   mutual   no hit   med margin
+--------------------------------------------------------------------------
+BIG       40     0.0%        0        0       1833.0
+SMALL      5    80.0%        1        1       1933.0
+==========================================================================
