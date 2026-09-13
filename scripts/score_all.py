@@ -19,34 +19,52 @@ for line in open("all_4116.tsv"):
     sc[q][k] = sc[q].get(k, 0.0) + float(b)
 print("queries with BLAST hits:", len(sc))
 
-conf = Counter()
-margins = defaultdict(list)
-unlabelled = 0
+stats = defaultdict(lambda: {"n":0, "uc":0, "uw":0, "tie_inc":0, "tie_exc":0})
+conf = Counter(); margins = defaultdict(list); unlabelled = 0
+
 for q, d in sc.items():
     truth = cls_of.get(q)
     if not truth:
-        unlabelled += 1
-        continue
-    ranked = sorted(d.items(), key=lambda kv: -kv[1])
-    conf[(truth, ranked[0][0])] += 1
-    if len(ranked) > 1:
-        margins[truth].append(ranked[0][1] - ranked[1][1])
-if unlabelled:
-    print("queries with no class label:", unlabelled)
+        unlabelled += 1; continue
+    s = stats[truth]; s["n"] += 1
+    top = max(d.values())
+    winners = [k for k, v in d.items() if v == top]
+    if len(winners) == 1:
+        pred = winners[0]
+        conf[(truth, pred)] += 1
+        s["uc" if pred == truth else "uw"] += 1
+        rest = [v for v in d.values() if v != top]
+        if rest: margins[truth].append(top - max(rest))
+    else:
+        s["tie_inc" if truth in winners else "tie_exc"] += 1
 
+if unlabelled: print("queries with no class label:", unlabelled)
 order = ("BIG", "MEDIUM", "SMALL")
-print("\nCONFUSION MATRIX  (rows = truth, cols = predicted)")
-print("%-8s %8s %8s %8s %10s" % ("truth", *order, "n"))
-for t in order:
-    n = sum(conf[(t, p)] for p in order)
-    if n:
-        print("%-8s %8d %8d %8d %10d" % (t, *[conf[(t, p)] for p in order], n))
 
-print("\nACCURACY AND MARGIN")
-print("%-8s %10s %10s %12s" % ("class", "n", "correct", "med margin"))
+print("\nUNAMBIGUOUS ASSIGNMENTS ONLY (ties excluded)")
+print("%-8s %7s %9s %9s %8s %8s %11s" % (
+    "class","n","unique ok","unique no","tie+own","tie-own","med margin"))
 for t in order:
-    n = sum(conf[(t, p)] for p in order)
-    if not n:
-        continue
+    s = stats.get(t)
+    if not s or not s["n"]: continue
     m = st.median(margins[t]) if margins[t] else 0
-    print("%-8s %10d %9.2f%% %12.0f" % (t, n, 100.0 * conf[(t, t)] / n, m))
+    print("%-8s %7d %9d %9d %8d %8d %11.0f" % (
+        t, s["n"], s["uc"], s["uw"], s["tie_inc"], s["tie_exc"], m))
+
+print("\nACCURACY BOUNDS")
+print("%-8s %7s %14s %14s %12s" % ("class","n","lower","upper","decided only"))
+for t in order:
+    s = stats.get(t)
+    if not s or not s["n"]: continue
+    n = s["n"]; ties = s["tie_inc"] + s["tie_exc"]; dec = s["uc"] + s["uw"]
+    print("%-8s %7d %13.2f%% %13.2f%% %11.2f%%" % (
+        t, n, 100.0*s["uc"]/n, 100.0*(s["uc"]+ties)/n,
+        100.0*s["uc"]/dec if dec else 0))
+print("\nlower = ties counted wrong, upper = ties counted right,")
+print("decided only = accuracy over unambiguous assignments")
+
+print("\nCONFUSION MATRIX, unambiguous only (rows = truth)")
+print("%-8s %8s %8s %8s" % ("truth", *order))
+for t in order:
+    if sum(conf[(t, p)] for p in order):
+        print("%-8s %8d %8d %8d" % (t, *[conf[(t, p)] for p in order]))
