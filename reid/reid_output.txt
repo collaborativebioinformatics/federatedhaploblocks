@@ -1,0 +1,46 @@
+blocks: 39,077     haplotypes: 5,096  (2,548 individuals)
+
+SINGLETON EXPOSURE
+  total singleton clusters genome-wide : 7,712,127
+  per haplotype, mean blocks as singleton: 1513.4
+  per individual (2 haplotypes)          : 3026.7
+  blocks containing at least one singleton: 35,740 of 39,077  (91.5%)
+
+  singleton_count per block:
+      50%        97
+      75%       255
+      90%       505
+      99%      1366
+     100%      5086
+
+SUPPRESSING WHOLE BLOCKS, worst first
+    blocks  singletons gone   % removed
+        10          43,845        0.6%
+       100         260,067        3.4%
+       500         868,423       11.3%
+     1,000       1,421,856       18.4%
+     5,000       3,917,970       50.8%
+    10,000       5,563,060       72.1%
+  blocks needed to remove every singleton: 35,740 (91.5% of all blocks)
+
+STRUCTURE
+  dominance      median 0.464   min 0.0006   max 1.0000
+  n_clusters     median 159   max 5,090
+  entropy        median 2.65   max 12.31
+
+MOST EXPOSED BLOCKS (highest singleton fraction)
+                  block  n_clusters  max_cluster_size  singleton_count  dominance  shannon_entropy
+         chr20_1-598702        5090                 3             5086   0.000589          12.3125
+chr16_42277286-46949080        5085                 7             5079   0.001374          12.3093
+         chr12_1-599431        5082                 8             5074   0.001570          12.3077
+          chr9_1-707077        5073                 9             5061   0.001766          12.3028
+chr20_28732807-31484041        4540                89             4438   0.017465          11.8061
+chr10_38070573-42384094        4349               305             4278   0.059851          11.3032
+ chr4_48970926-52066154        4049               757             3996   0.148548          10.6246
+ chr8_49392110-49787576        3851               532             3693   0.104396          10.4634
+
+CORRELATION with singleton_count
+  dominance        -0.401
+  shannon_entropy  +0.774
+  n_clusters       +0.987
+  block_length     +0.323
